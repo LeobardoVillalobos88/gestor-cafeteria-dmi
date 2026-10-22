@@ -75,7 +75,7 @@ class ApiClient {
     return switch (code) {
       404 => NotFoundFailure(_detalle(json) ?? 'Recurso no encontrado'),
       409 => ConflictFailure(_detalle(json) ?? 'Acción no permitida'),
-      422 => const ValidationFailure({}),
+      422 => ValidationFailure(_campos(json)),
       >= 500 && <= 599 => ServerFailure(code),
       _ => UnexpectedFailure(
         code,
@@ -90,5 +90,18 @@ class ApiClient {
       return json['detail'] as String;
     }
     return null;
+  }
+
+  //En 422 'detail' es una lista: la clave es loc[1] y el valor es msg
+  Map<String, String> _campos(dynamic json) {
+    final campos = <String, String>{};
+    if (json is! Map || json['detail'] is! List) return campos;
+    for (final error in json['detail'] as List) {
+      if (error is Map && error['loc'] is List && error['msg'] is String) {
+        final loc = error['loc'] as List;
+        if (loc.length > 1) campos['${loc[1]}'] = error['msg'] as String;
+      }
+    }
+    return campos;
   }
 }
