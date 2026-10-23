@@ -126,4 +126,27 @@ void main() {
     });
   });
 
+  group('Condición de éxito de _send', () {
+    // 7. Respuesta 300 (defecto D3)
+    test(
+      '300 no es éxito: lanza UnexpectedFailure con el statusCode',
+      () async {
+        final mock = MockClient((request) async {
+          return http.Response('{"detail": "Multiple Choices"}', 300);
+        });
+        final api = ApiClient(client: mock, baseUrl: 'http://prueba');
+
+        expect(
+          api.get('/orders'),
+          throwsA(
+            isA<UnexpectedFailure>().having(
+              (f) => f.statusCode,
+              'statusCode',
+              300,
+            ),
+          ),
+        );
+      },
+    );
+  });
 }

@@ -54,7 +54,8 @@ class ApiClient {
     }
     final json = _tryDecode(response);
     final code = response.statusCode;
-    if (code >= 200 && code <= 300) return json;
+    //Solo 2xx es exito: 300 o mas ya no lo es
+    if (code >= 200 && code < 300) return json;
     //Si el servidor respondio con error, se lanza el Failure que le corresponde
     throw _mapearError(code, json);
   }
